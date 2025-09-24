@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using MVC_CORE_Start_Up_.Areas.Identity.Data;
 using MVC_CORE_Start_Up_.Data;
+using MVC_CORE_Start_Up_.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 var connectionString = builder.Configuration.GetConnectionString("StartUpDbContextConnection") ?? throw new InvalidOperationException("Connection string 'StartUpDbContextConnection' not found.");
@@ -27,6 +28,9 @@ builder.Services.Configure<IdentityOptions>(options => {
 
 });
 
+// Adding DBContext for Entity Framework
+builder.Services.AddDbContext<MvcCoreContext>(options =>
+    options.UseSqlServer(builder.Configuration.GetConnectionString("StartUpDbContextConnection") ?? throw new InvalidOperationException("Connection string 'StartUpDbContextConnection' not found.")));
 
 var app = builder.Build();
 
@@ -47,7 +51,7 @@ app.UseAuthorization();
 
 app.MapControllerRoute(
     name: "default",
-    pattern: "{controller=Home}/{action=Index}/{id?}");
+    pattern: "{controller=Employees}/{action=Index}/{id?}");
 
 app.MapRazorPages();
 
