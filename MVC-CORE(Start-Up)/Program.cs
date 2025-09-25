@@ -1,6 +1,8 @@
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.EntityFrameworkCore;
 using MVC_CORE_Start_Up_.Areas.Identity.Data;
+using MVC_CORE_Start_Up_.BackendResources;
 using MVC_CORE_Start_Up_.Data;
 using MVC_CORE_Start_Up_.Models;
 
@@ -9,7 +11,7 @@ var connectionString = builder.Configuration.GetConnectionString("StartUpDbConte
 
 builder.Services.AddDbContext<StartUpDbContext>(options => options.UseSqlServer(connectionString));
 
-builder.Services.AddDefaultIdentity<ApplicationUser>(options => options.SignIn.RequireConfirmedAccount = false).AddEntityFrameworkStores<StartUpDbContext>();
+builder.Services.AddDefaultIdentity<ApplicationUser>(options => options.SignIn.RequireConfirmedAccount = true).AddEntityFrameworkStores<StartUpDbContext>();
 
 // Add services to the container.
 builder.Services.AddControllersWithViews()
@@ -37,6 +39,8 @@ builder.Services.Configure<IdentityOptions>(options => {
 // Adding DBContext for Entity Framework
 builder.Services.AddDbContext<MvcCoreContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("StartUpDbContextConnection") ?? throw new InvalidOperationException("Connection string 'StartUpDbContextConnection' not found.")));
+
+builder.Services.AddTransient<IEmailSender, EmailSender>();
 
 var app = builder.Build();
 
