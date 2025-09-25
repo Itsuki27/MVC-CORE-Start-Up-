@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
@@ -9,6 +10,7 @@ using MVC_CORE_Start_Up_.Models;
 
 namespace MVC_CORE_Start_Up_.Controllers
 {
+    [Authorize]
     public class EmployeesController : Controller
     {
         private readonly MvcCoreContext _context;
@@ -57,6 +59,43 @@ namespace MVC_CORE_Start_Up_.Controllers
         {
             if (ModelState.IsValid)
             {
+                #region Duplicate Check
+                // Prevent adding employees with duplicate first names (case insensitive and ignoring spaces)
+                bool duplicateFirst = await _context.Employees
+                    .AnyAsync(e => e.FirstName.Trim().ToLower() == employee.FirstName.Trim().ToLower());
+
+                if (duplicateFirst)
+                {
+                    ModelState.AddModelError("FirstName", "An employee with this first name already exists.");
+                }
+
+                // Prevent adding employees with duplicate last names (case insensitive and ignoring spaces)
+                bool duplicateLast = await _context.Employees
+                    .AnyAsync(e => e.LastName.Trim().ToLower() == employee.LastName.Trim().ToLower());
+
+                if (duplicateLast)
+                {
+                    ModelState.AddModelError("LastName", "An employee with this last name already exists.");
+                }
+
+                // Prevent adding employees with duplicate departments (case insensitive and ignoring spaces)
+                bool duplicateDept = await _context.Employees
+                    .AnyAsync(e => e.Department.Trim().ToLower() == employee.Department.Trim().ToLower());
+
+                if (duplicateDept)
+                {
+                    ModelState.AddModelError("Department", "An employee with this department already exists.");
+                }
+
+                #endregion
+
+                // If there are any validation errors, return the view with the current employee data
+                if (!ModelState.IsValid)
+                {
+                    return View(employee);
+                }
+
+
                 _context.Add(employee);
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));

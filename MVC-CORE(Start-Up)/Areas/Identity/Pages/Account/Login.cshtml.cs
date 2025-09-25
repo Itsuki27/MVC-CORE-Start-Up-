@@ -89,7 +89,7 @@ namespace MVC_CORE_Start_Up_.Areas.Identity.Pages.Account
         {
             if (User.Identity.IsAuthenticated)
             {
-                Response.Redirect("/");
+                Response.Redirect("/Employees/Index");
             }
 
 
@@ -122,7 +122,8 @@ namespace MVC_CORE_Start_Up_.Areas.Identity.Pages.Account
                 if (result.Succeeded)
                 {
                     _logger.LogInformation("User logged in.");
-                    return LocalRedirect(returnUrl);
+                    //return LocalRedirect(returnUrl);
+                    return RedirectToAction("Index", "Employees");
                 }
                 if (result.RequiresTwoFactor)
                 {
