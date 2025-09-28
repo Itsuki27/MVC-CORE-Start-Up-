@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
+using System.Linq.Dynamic.Core;
 using MVC_CORE_Start_Up_.Models;
 
 namespace MVC_CORE_Start_Up_.Controllers
@@ -21,10 +22,45 @@ namespace MVC_CORE_Start_Up_.Controllers
         }
 
         // GET: Employees
-        public async Task<IActionResult> Index()
+        public IActionResult Index()
         {
-            return View(await _context.Employees.ToListAsync());
+            return View();
         }
+
+        [HttpPost]
+        public async Task<IActionResult> GetEmployees()
+        {
+            var draw = Request.Form["draw"].FirstOrDefault();
+            var start = Request.Form["start"].FirstOrDefault();
+            var length = Request.Form["length"].FirstOrDefault();
+            var sortColumn = Request.Form["columns[" + Request.Form["order[0][column]"].FirstOrDefault() + "][name]"].FirstOrDefault();
+            var sortColumnDirection = Request.Form["order[0][dir]"].FirstOrDefault();
+            var searchValue = Request.Form["search[value]"].FirstOrDefault();
+
+            int pageSize = length != null ? Convert.ToInt32(length) : 0;
+            int skip = start != null ? Convert.ToInt32(start) : 0;
+            int recordsTotal = 0;
+
+            var employeeData = _context.Employees.AsQueryable();
+
+            if (!(string.IsNullOrEmpty(sortColumn) && string.IsNullOrEmpty(sortColumnDirection)))
+            {
+                employeeData = employeeData.OrderBy(sortColumn + " " + sortColumnDirection);
+            }
+            if (!string.IsNullOrEmpty(searchValue))
+            {
+                employeeData = employeeData.Where(m => m.FirstName.Contains(searchValue)
+                                            || m.LastName.Contains(searchValue)
+                                            || m.Department.Contains(searchValue));
+            }
+
+            recordsTotal = await employeeData.CountAsync();
+            var data = await employeeData.Skip(skip).Take(pageSize).ToListAsync();
+            var jsonData = new { draw = draw, recordsFiltered = recordsTotal, recordsTotal = recordsTotal, data = data };
+
+            return Ok(jsonData);
+        }
+
 
         // GET: Employees/Details/5
         public async Task<IActionResult> Details(int? id)
@@ -98,6 +134,7 @@ namespace MVC_CORE_Start_Up_.Controllers
 
                 _context.Add(employee);
                 await _context.SaveChangesAsync();
+                TempData["SuccessMessage"] = "Employee created successfully.";
                 return RedirectToAction(nameof(Index));
             }
             return View(employee);
@@ -149,6 +186,7 @@ namespace MVC_CORE_Start_Up_.Controllers
                         throw;
                     }
                 }
+                TempData["SuccessMessage"] = "Employee updated successfully.";
                 return RedirectToAction(nameof(Index));
             }
             return View(employee);
@@ -184,6 +222,7 @@ namespace MVC_CORE_Start_Up_.Controllers
             }
 
             await _context.SaveChangesAsync();
+            TempData["SuccessMessage"] = "Employee deleted successfully.";
             return RedirectToAction(nameof(Index));
         }
 
