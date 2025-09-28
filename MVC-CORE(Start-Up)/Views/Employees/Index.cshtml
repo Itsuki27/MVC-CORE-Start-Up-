@@ -1,5 +1,3 @@
-﻿@model IEnumerable<MVC_CORE_Start_Up_.Models.Employee>
-
 @{
     ViewData["Title"] = "Index";
     Layout = "~/Views/Shared/_Layout.cshtml";
@@ -8,47 +6,91 @@
 <h1>Index</h1>
 
 <p>
-    <a asp-action="Create">Create New</a>
+    <a asp-action="Create" class="btn btn-success">Create New</a>
 </p>
-<table class="table">
+
+
+<table id="employeeTable" class="table">
     <thead>
         <tr>
             <th>
-                @Html.DisplayNameFor(model => model.FirstName)
+                First Name
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.LastName)
+                Last Name
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.Salary)
+                Salary
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.Department)
+                Department
             </th>
             <th></th>
         </tr>
     </thead>
     <tbody>
-@foreach (var item in Model) {
-        <tr>
-            <td>
-                @Html.DisplayFor(modelItem => item.FirstName)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.LastName)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Salary)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Department)
-            </td>
-            <td>
-                <a asp-action="Edit" asp-route-id="@item.EmployeeId">Edit</a> |
-                <a asp-action="Details" asp-route-id="@item.EmployeeId">Details</a> |
-                <a asp-action="Delete" asp-route-id="@item.EmployeeId">Delete</a>
-            </td>
-        </tr>
-}
     </tbody>
 </table>
+
+@section Scripts {
+
+
+
+    <script>
+        $(document).ready(function () {
+            @if (TempData["SuccessMessage"] != null)
+            {
+                <text>
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Success',
+                        text: '@TempData["SuccessMessage"]'
+                    });
+                </text>
+            }
+
+            @if (TempData["LoginSuccess"] != null)
+            {
+                <text>
+                    Swal.fire({
+                    icon: 'success',
+                    title: 'Success',
+                    text: '@TempData["LoginSuccess"]'
+                    });
+                </text>
+            }
+
+
+
+            $('#employeeTable').DataTable({
+                "processing": true,
+                "serverSide": true,
+                "filter": true,
+                "ajax": {
+                    "url": "/Employees/GetEmployees",
+                    "type": "POST",
+                    "datatype": "json"
+                },
+                "columnDefs": [{
+                    "targets": [0],
+                    "visible": true,
+                    "searchable": true
+                }],
+                "columns": [
+                    { "data": "firstName", "name": "FirstName", "autoWidth": true },
+                    { "data": "lastName", "name": "LastName", "autoWidth": true },
+                    { "data": "salary", "name": "Salary", "autoWidth": true },
+                    { "data": "department", "name": "Department", "autoWidth": true },
+                    {
+                        "render": function (data, type, row) {
+                            return '<a href="/Employees/Edit/' + row.employeeId + '" class="btn btn-primary">Edit</a> | ' +
+                                   '<a href="/Employees/Details/' + row.employeeId + '" class="btn btn-info">Details</a> | ' +
+                                   '<a href="/Employees/Delete/' + row.employeeId + '" class="btn btn-danger">Delete</a>';
+                        },
+                        "orderable": false
+                    }
+                ]
+            });
+        });
+    </script>
+}
