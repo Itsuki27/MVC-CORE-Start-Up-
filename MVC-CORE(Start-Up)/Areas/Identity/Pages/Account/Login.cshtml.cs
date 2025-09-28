@@ -131,7 +131,7 @@ namespace MVC_CORE_Start_Up_.Areas.Identity.Pages.Account
                 if (result.Succeeded)
                 {
                     _logger.LogInformation("User logged in.");
-                    //return LocalRedirect(returnUrl);
+                    TempData["LoginSuccess"] = "Welcome! You have successfully logged in.";
                     return RedirectToAction("Index", "Employees");
                 }
 
